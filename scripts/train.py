@@ -1,4 +1,4 @@
-# scripts/train.py (Massively Multilingual GPU Version)
+# scripts/train.py (Massively Multilingual GPU Version - Updated)
 
 import torch
 from datasets import load_dataset, concatenate_datasets
@@ -23,10 +23,11 @@ def get_lang_name(code):
 MODEL_CHECKPOINT = "google/flan-t5-xl"
 MODEL_SAVE_PATH = f"./models/{MODEL_CHECKPOINT.replace('/', '-')}-multilingual"
 
-# Check for a compatible GPU
-if not torch.cuda.is_available() or torch.cuda.get_device_properties(0).major < 7:
-    raise SystemError("This script requires a modern NVIDIA GPU (Ampere architecture or newer).")
-print(f"✅ GPU found! Using device: {torch.cuda.get_device_name(0)}")
+# ✅ UPDATE: The hardware check is now disabled (commented out) to allow running on older GPUs.
+# # Check for a compatible GPU
+# if not torch.cuda.is_available() or torch.cuda.get_device_properties(0).major < 7:
+#     raise SystemError("This script requires a modern NVIDIA GPU (Ampere architecture or newer).")
+# print(f"✅ GPU found! Using device: {torch.cuda.get_device_name(0)}")
 
 # --- 2. Load Model & Tokenizer ---
 print(f"🔄 Loading powerful model '{MODEL_CHECKPOINT}'...")
@@ -45,9 +46,14 @@ print("🔄 Preparing multilingual datasets...")
 # --- Translation Dataset (NLLB) ---
 # We'll use a subset of languages to keep it manageable, focusing on Indian languages.
 # NLLB uses 3-letter codes. e.g., hin_Deva (Hindi), eng_Latn (English), ben_Beng (Bengali), etc.
-indian_langs = ["asm_Beng", "ben_Beng", "doi_Deva", "eng_Latn", "gom_Deva", "guj_Gujr", "hin_Deva", "kan_Knda", "kas_Arab", "kas_Deva", "mai_Deva", "mal_Mlym", "mar_Deva", "mni_Beng", "mni_Mtei", "npi_Deva", "ory_Orya", "pan_Guru", "san_Deva", "sat_Olck", "snd_Arab", "snd_Deva", "tam_Taml", "tel_Telu", "urd_Arab", "deu_Latn", "fra_Latn"]
+target_langs = [
+    # Indian Languages
+    "asm_Beng", "ben_Beng", "doi_Deva", "eng_Latn", "gom_Deva", "guj_Gujr", "hin_Deva", "kan_Knda", "kas_Arab", "kas_Deva", "mai_Deva", "mal_Mlym", "mar_Deva", "mni_Beng", "mni_Mtei", "npi_Deva", "ory_Orya", "pan_Guru", "san_Deva", "sat_Olck", "snd_Arab", "snd_Deva", "tam_Taml", "tel_Telu", "urd_Arab",
+    # Foreign Languages
+    "deu_Latn", "fra_Latn"
+]
 translation_ds = load_dataset("allenai/nllb-seed", split="train").filter(
-    lambda x: x['translation']['src_lang'] in indian_langs and x['translation']['tgt_lang'] in indian_langs
+    lambda x: x['translation']['src_lang'] in target_langs and x['translation']['tgt_lang'] in target_langs
 )
 
 def preprocess_translation(example):
